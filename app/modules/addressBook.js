@@ -1,6 +1,6 @@
 // @flow
 import storage from 'electron-json-storage'
-import { omit, isEmpty } from 'lodash'
+import { omit, isEmpty, keys, values, indexOf, zipObject } from 'lodash'
 import { wallet } from 'neon-js'
 
 import { showSuccessNotification, showErrorNotification } from './notifications'
@@ -53,6 +53,35 @@ export const saveAddress = (address: string, name: string) => (dispatch: Dispatc
           dispatch(showErrorNotification({ message: `Error saving address book entry for ${name}.` }))
         } else {
           dispatch(showSuccessNotification({ message: `Saved address book entry for ${name}.` }))
+          dispatch(setAddresses(addresses))
+        }
+      })
+    }
+  })
+}
+
+export const editAddress = (oldName: string, newName: string, address: string) => (dispatch: DispatchType) => {
+  return storage.get(ADDRESS_BOOK_STORAGE_KEY, (error, data) => {
+    if (error) {
+      dispatch(showErrorNotification({ message: 'Error loading address book.' }))
+    } else if (!data[oldName]) {
+      dispatch(showErrorNotification({ message: `Address book entry for ${oldName} does not exist.` }))
+    } else {
+      const names = keys(data)
+      const addresses = values(data)
+      const index = indexOf(names, oldName)
+
+      const contacts = zipObject(
+        [...names.slice(0, index - 1), newName, names.slice(index + 1)],
+        [...addresses.slice(0, index - 1), addresses, addresses.slice(index + 1)]
+      )
+      debugger
+
+      storage.set(ADDRESS_BOOK_STORAGE_KEY, contacts, (error) => {
+        if (error) {
+          dispatch(showErrorNotification({ message: `Error saving address book entry for ${newName}.` }))
+        } else {
+          dispatch(showSuccessNotification({ message: `Saved address book entry for ${newName}.` }))
           dispatch(setAddresses(addresses))
         }
       })

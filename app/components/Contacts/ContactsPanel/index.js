@@ -1,11 +1,17 @@
 // @flow
+import { compose } from 'recompose'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 
 import ContactsPanel from './ContactsPanel'
-import { deleteAddress } from '../../../modules/addressBook'
+import { editAddress, deleteAddress } from '../../../modules/addressBook'
 
 const mapDispatchToProps = (dispatch) => ({
+  editContact: (...args) => dispatch(editAddress(...args)),
   deleteContact: (...args) => dispatch(deleteAddress(...args))
 })
 
-export default connect(null, mapDispatchToProps)(ContactsPanel)
+export default compose(
+  withRouter,
+  connect(null, mapDispatchToProps)
+)(ContactsPanel)
